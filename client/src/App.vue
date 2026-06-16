@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from './stores/auth';
-import { Home, ClipboardList, ShieldCheck, User as UserIcon, LogOut } from '@lucide/vue';
+import { Home, ClipboardList, ShieldCheck, LogOut } from '@lucide/vue';
 
 const auth = useAuthStore();
 const router = useRouter();

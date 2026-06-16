@@ -1,9 +1,11 @@
 export type UUID = string;
 
-export enum UserRole {
-    PATIENT = 'PATIENT',
-    MEDECIN = 'MEDECIN',
-}
+export const UserRole = {
+    PATIENT: 'PATIENT',
+    MEDECIN: 'MEDECIN',
+} as const;
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export interface User {
     id: UUID;
@@ -22,11 +24,13 @@ export interface Patient extends User {
     antecedents: string;
 }
 
-export enum AccessLevel {
-    FULL = 'FULL',
-    LIMITED = 'LIMITED',
-    EMERGENCY = 'EMERGENCY',
-}
+export const AccessLevel = {
+    FULL: 'FULL',
+    LIMITED: 'LIMITED',
+    EMERGENCY: 'EMERGENCY',
+} as const;
+
+export type AccessLevel = (typeof AccessLevel)[keyof typeof AccessLevel];
 
 export interface Medecin extends User {
     id_med: string;
