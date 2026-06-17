@@ -34,13 +34,25 @@ export const useAuthStore = defineStore('auth', () => {
         },
     ];
 
+    const registeredUsers = useLocalStorage<(Patient | Medecin)[]>('medbook_registered_users', mockUsers);
+
     function login(email: string, role: UserRole) {
-        const user = mockUsers.find(u => u.email === email && u.role === role);
+        const user = registeredUsers.value.find(u => u.email === email && u.role === role);
         if (user) {
             currentUser.value = user;
             return true;
         }
         return false;
+    }
+
+    function register(userData: Patient | Medecin) {
+        // Prevent duplicate emails for the prototype
+        if (registeredUsers.value.some(u => u.email === userData.email)) {
+            return false;
+        }
+        registeredUsers.value.push(userData);
+        currentUser.value = userData;
+        return true;
     }
 
     function logout() {
@@ -51,7 +63,9 @@ export const useAuthStore = defineStore('auth', () => {
         currentUser,
         isAuthenticated,
         userRole,
+        registeredUsers,
         login,
+        register,
         logout,
     };
 });

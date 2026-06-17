@@ -9,6 +9,7 @@ const router = createRouter({
     routes: [
         { path: '/', redirect: '/login' },
         { path: '/login', component: LoginView },
+        { path: '/signup', component: () => import('../modules/auth/SignupView.vue') },
         {
             path: '/patient',
             component: PatientDashboard,
@@ -32,6 +33,11 @@ const router = createRouter({
         {
             path: '/doctor/patient/:id',
             component: () => import('../modules/doctor/PatientRecordView.vue'),
+            meta: { requiresAuth: true, role: 'MEDECIN' }
+        },
+        {
+            path: '/doctor/address-book',
+            component: () => import('../modules/doctor/AddressBook.vue'),
             meta: { requiresAuth: true, role: 'MEDECIN' }
         },
     ]

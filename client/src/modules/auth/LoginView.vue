@@ -70,6 +70,10 @@ const setRole = (r: UserRole) => {
         <span v-if="!loading">Se connecter</span>
         <span v-else>Chargement...</span>
       </button>
+
+      <p @click="router.push('/signup')" class="apple-text-secondary" style="text-align: center; margin-top: 1.5rem; cursor: pointer; color: var(--accent-blue); font-weight: 500;">
+        Pas encore de compte ? Créer un compte
+      </p>
     </div>
 
     <p class="apple-text-secondary" style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">

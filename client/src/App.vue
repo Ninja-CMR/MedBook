@@ -31,7 +31,12 @@ const handleLogout = () => {
       </router-link>
       <router-link to="/doctor" v-if="auth.userRole === 'MEDECIN'" class="nav-item" :class="{ active: route.path === '/doctor' }">
         <Home :size="24" />
-        <span>Cabinet</span>
+        <span>Accueil</span>
+      </router-link>
+
+      <router-link to="/doctor/address-book" v-if="auth.userRole === 'MEDECIN'" class="nav-item" :class="{ active: route.path === '/doctor/address-book' }">
+        <ClipboardList :size="24" />
+        <span>Patients</span>
       </router-link>
       
       <router-link v-if="auth.userRole === 'PATIENT'" to="/patient/audit" class="nav-item" :class="{ active: route.path === '/patient/audit' }">
