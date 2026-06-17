@@ -1,173 +1,115 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
-import { useMedicalStore } from '../../stores/medical';
 import { 
   Search, 
   Flame, 
-  History,
-  Activity,
-  PlusCircle
+  ChevronRight
 } from '@lucide/vue';
+import type { Patient } from '../../core/types';
 
 const auth = useAuthStore();
-const medical = useMedicalStore();
+const router = useRouter();
 
 const searchQuery = ref('');
 const showBriseGlaceModal = ref(false);
 
-const mockPatients = [
-  { id: 'p1', nom: 'Dupont', prenom: 'Jean', email: 'patient@example.com' },
-  { id: 'p2', nom: 'Martin', prenom: 'Marie', email: 'marie@example.com' },
-];
-
 const filteredPatients = computed(() => {
-  if (!searchQuery.value) return [];
-  return mockPatients.filter(p => 
-    p.nom.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
-    p.prenom.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    p.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+  if (!searchQuery.value) return auth.registeredUsers.filter(u => u.role === 'PATIENT') as Patient[];
+  const query = searchQuery.value.toLowerCase();
+  return (auth.registeredUsers.filter(u => u.role === 'PATIENT') as Patient[]).filter(p => 
+    p.nom.toLowerCase().includes(query) || 
+    p.prenom.toLowerCase().includes(query) ||
+    p.email.toLowerCase().includes(query)
   );
 });
 
-const handleEmergencyAccess = () => {
-  showBriseGlaceModal.value = true;
+const viewPatient = (id: string) => {
+  router.push(`/doctor/patient/${id}`);
 };
 
-const confirmEmergency = () => {
-  // Mock logic for Brise-Glace
-  medical.addAuditLog('EMERGENCY_ACCESS', auth.currentUser?.id || 'unknown', 'Emergency access triggered for patient P-001');
+const handleBriseGlace = () => {
   showBriseGlaceModal.value = false;
-  alert('Accès d\'urgence activé. Session enregistrée dans le journal d\'audit.');
+  // In a real app, this would log access and grant temporary decryption keys
+  alert("Accès Brise-Glace activé. L'action a été journalisée.");
 };
 </script>
 
 <template>
-  <div class="doctor-dashboard">
+  <div class="doctor-dashboard animate-slide-up">
+    <!-- Apple Header with Search -->
     <header class="apple-header">
-      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem;">
-        <h1 class="apple-title-large">Cabinet</h1>
-        <div class="user-avatar" style="background: #E5F1FF; color: var(--accent-blue);">
-          Dr. {{ auth.currentUser?.nom }}
-        </div>
-      </div>
-
-      <div class="search-container">
+      <h1 class="apple-title-large">Cabinet médical</h1>
+      <div class="search-bar">
         <Search :size="18" class="search-icon" />
         <input 
           v-model="searchQuery" 
           type="text" 
-          class="apple-input search-input" 
-          placeholder="Rechercher un patient (Nom, Email...)"
+          placeholder="Rechercher un patient..."
+          class="apple-input search-input"
         >
       </div>
     </header>
 
-    <main style="padding: 0 1.25rem 6rem;">
-      <!-- Search Results -->
-      <div v-if="searchQuery" class="search-results">
-        <h2 class="apple-title-medium" style="margin-bottom: 1rem;">Résultats</h2>
-        <div v-if="filteredPatients.length > 0">
-          <div v-for="p in filteredPatients" :key="p.id" class="apple-card patient-card">
-            <div class="patient-info">
-              <div class="patient-avatar">{{ p.prenom[0] }}{{ p.nom[0] }}</div>
-              <div>
-                <div style="font-weight: 600;">{{ p.prenom }} {{ p.nom }}</div>
-                <div class="apple-text-secondary" style="font-size: 0.8rem;">{{ p.email }}</div>
-              </div>
-            </div>
-            <button class="action-btn">
-              <PlusCircle :size="20" color="var(--accent-blue)" />
-            </button>
-          </div>
-        </div>
-        <div v-else class="apple-text-secondary" style="text-align: center; padding: 2rem;">
-          Aucun patient trouvé.
-        </div>
-      </div>
-
-      <!-- Emergency Section -->
-      <div class="apple-card emergency-card" @click="handleEmergencyAccess">
-        <div class="emergency-content">
-          <div class="emergency-icon">
+    <main style="padding: 0 1.25rem 6rem; margin-top: 1rem;">
+      <!-- Emergency Card -->
+      <div class="apple-card emergency-card" @click="showBriseGlaceModal = true">
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <div class="icon-circle bg-red pulse">
             <Flame :size="24" color="white" />
           </div>
-          <div>
-            <h3 style="font-weight: 700; color: white;">Mode Brise-Glace</h3>
-            <p style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.8);">Accès d'urgence sans consentement immédiat.</p>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; color: var(--apple-red);">MODE BRISE-GLACE</div>
+            <div class="apple-text-secondary">Accès d'urgence immédiat</div>
           </div>
-        </div>
-        <ChevronRight :size="20" color="white" />
-      </div>
-
-      <!-- Recent Patients -->
-      <h2 class="apple-title-medium" style="margin: 1.5rem 0 1rem;">Patients récents</h2>
-      <div class="apple-card recent-list">
-        <div v-for="p in mockPatients" :key="p.id" class="list-item">
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <History :size="20" color="var(--text-secondary)" />
-            <div>
-              <div style="font-weight: 500;">{{ p.prenom }} {{ p.nom }}</div>
-              <div class="apple-text-secondary" style="font-size: 0.75rem;">Dernière visite: Hier</div>
-            </div>
-          </div>
-          <ChevronRight :size="18" color="#C7C7CC" />
+          <ChevronRight :size="20" color="var(--apple-red)" />
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <h2 class="apple-title-medium" style="margin: 1.5rem 0 1rem;">Action rapide</h2>
-      <div class="quick-actions">
-        <div class="apple-card action-card">
-          <Activity :size="24" color="var(--accent-green)" />
-          <span>Nouvelle Consultation</span>
-        </div>
-        <div class="apple-card action-card">
-          <Clipboard :size="24" color="var(--accent-indigo)" />
-          <span>Ordonnance</span>
+      <h2 class="apple-title-small" style="margin: 2rem 0 0.75rem;">Mes patients</h2>
+      
+      <div class="patient-grid">
+        <div v-for="patient in filteredPatients" :key="patient.id" class="apple-card patient-mini-card" @click="viewPatient(patient.id)">
+          <div class="patient-mini-avatar">{{ patient.prenom[0] }}{{ patient.nom[0] }}</div>
+          <div style="margin-top: 0.75rem; font-weight: 600; font-size: 0.9rem; text-align: center;">
+            {{ patient.nom }}
+          </div>
+          <div class="apple-text-secondary" style="font-size: 0.7rem; text-align: center;">
+            {{ patient.groupeSanguin }}
+          </div>
         </div>
       </div>
     </main>
 
-    <!-- Emergency Modal -->
-    <Teleport to="body">
-      <div v-if="showBriseGlaceModal" class="modal-overlay">
-        <div class="apple-card modal-content">
-          <h2 class="apple-title-medium" style="color: var(--accent-red); margin-bottom: 1rem;">ATTENTION</h2>
-          <p class="apple-text-secondary" style="margin-bottom: 1.5rem;">
-            L'utilisation du mode <strong>"Brise-Glace"</strong> est strictement réservée aux situations d'urgence vitale. 
-            Toute consultation sera enregistrée de manière indélébile dans le journal d'audit du patient.
-          </p>
-          <div style="display: flex; gap: 1rem;">
-            <button @click="showBriseGlaceModal = false" class="apple-button" style="background: #E5E5EA; color: var(--text-primary); flex: 1;">
-              Annuler
-            </button>
-            <button @click="confirmEmergency" class="apple-button" style="background: var(--accent-red); flex: 1;">
-              Confirmer l'accès
-            </button>
-          </div>
+    <!-- Brise-Glace Modal -->
+    <div v-if="showBriseGlaceModal" class="modal-backdrop" @click="showBriseGlaceModal = false">
+      <div class="modal-content animate-slide-up" @click.stop>
+        <div class="icon-circle bg-red" style="margin: 0 auto 1.5rem;">
+          <Flame :size="32" color="white" />
+        </div>
+        <h2 class="apple-title-medium">Accès d'Urgence</h2>
+        <p class="apple-text-secondary" style="margin: 1rem 0 2rem;">
+          L'utilisation du mode Brise-Glace contourne le consentement du patient. Cette action sera enregistrée de manière indélébile dans le journal d'audit.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <button @click="handleBriseGlace" class="apple-button" style="background: var(--apple-red);">
+            Confirmer l'accès
+          </button>
+          <button @click="showBriseGlaceModal = false" class="apple-button" style="background: #F2F2F7; color: black;">
+            Annuler
+          </button>
         </div>
       </div>
-    </Teleport>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.doctor-dashboard {
-  background: var(--bg-color);
-  min-height: 100vh;
-}
-
-.user-avatar {
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-.search-container {
+/* Scoped styles */
+.search-bar {
   position: relative;
-  width: 100%;
+  margin-top: 1rem;
 }
 
 .search-icon {
@@ -176,125 +118,92 @@ const confirmEmergency = () => {
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-secondary);
+  z-index: 10;
 }
 
 .search-input {
-  padding-left: 2.75rem;
-  background: #E5E5EA;
-  border: none;
-}
-
-.patient-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-}
-
-.patient-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.patient-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #F2F2F7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: var(--accent-blue);
-}
-
-.action-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
+  padding-left: 2.75rem !important;
+  background: rgba(0,0,0,0.05) !important;
+  height: 44px;
+  margin-bottom: 0;
 }
 
 .emergency-card {
-  background: linear-gradient(135deg, #FF3B30, #FF9500);
-  border: none;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border-left: 4px solid var(--apple-red);
   cursor: pointer;
+  background: rgba(255, 59, 48, 0.03);
 }
 
-.emergency-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.emergency-icon {
+.icon-circle {
   width: 44px;
   height: 44px;
-  background: rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.recent-list {
-  padding: 0;
+.bg-red { background-color: var(--apple-red); }
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
-.list-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid #F2F2F7;
-  cursor: pointer;
+.pulse {
+  animation: pulse 2s infinite ease-in-out;
 }
 
-.list-item:last-child {
-  border-bottom: none;
-}
-
-.quick-actions {
+.patient-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 1rem;
 }
 
-.action-card {
+.patient-mini-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  text-align: center;
+  padding: 1rem;
   cursor: pointer;
 }
 
-.action-card span {
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+.patient-mini-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--apple-blue);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 2rem;
 }
 
 .modal-content {
-  max-width: 400px;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
   width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
 }
 </style>

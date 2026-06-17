@@ -3,13 +3,8 @@ import { computed } from 'vue';
 import { useAuthStore } from '../../stores/auth';
 import { useMedicalStore } from '../../stores/medical';
 import { 
-  Activity, 
-  Clipboard, 
-  Calendar, 
-  Droplet, 
-  ChevronRight,
-  TrendingUp,
-  AlertCircle
+  ChevronRight, 
+  Activity,
 } from '@lucide/vue';
 import type { Patient } from '../../core/types';
 
@@ -37,51 +32,42 @@ const dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: '
       </div>
     </header>
 
-    <main style="padding: 0 1.25rem 6rem;">
-      <!-- Health Metrics (Apple Health style) -->
-      <div class="apple-card health-metric">
-        <div class="metric-header">
-          <div class="metric-icon" style="background: #FFEBEA;">
-            <Droplet :size="18" color="var(--accent-red)" />
+    <main style="padding: 0 1.25rem 6rem; margin-top: 1rem;">
+      <!-- Profile Card (Dynamic Metrics) -->
+      <div class="apple-card profile-card">
+        <div class="profile-header">
+          <div class="avatar-large">{{ patient.prenom[0] }}{{ patient.nom[0] }}</div>
+          <div>
+            <h2 class="apple-title-medium">{{ patient.prenom }} {{ patient.nom }}</h2>
+            <p class="apple-text-secondary">{{ patient.groupeSanguin }} • PT-001</p>
           </div>
-          <span class="metric-label" style="color: var(--accent-red)">Groupe Sanguin</span>
         </div>
-        <div class="metric-value">{{ patient.groupeSanguin }}</div>
-        <div class="apple-text-secondary">Précision vérifiée</div>
-      </div>
-
-      <div class="metrics-grid">
-        <div class="apple-card small-metric">
-          <div class="metric-header">
-            <TrendingUp :size="16" color="var(--accent-green)" />
-            <span class="metric-label-small">Allergies</span>
+        
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <span class="metric-label">Allergies</span>
+            <span class="metric-value" :class="{ 'text-red': patient.allergies !== 'Aucune' }">{{ patient.allergies }}</span>
           </div>
-          <div class="metric-value-small">{{ patient.allergies }}</div>
-        </div>
-        <div class="apple-card small-metric">
-          <div class="metric-header">
-            <Clipboard :size="16" color="var(--accent-blue)" />
-            <span class="metric-label-small">Antécédents</span>
+          <div class="metric-item">
+            <span class="metric-label">Antécédents</span>
+            <span class="metric-value">{{ patient.antecedents }}</span>
           </div>
-          <div class="metric-value-small">{{ patient.antecedents }}</div>
         </div>
       </div>
 
-      <h2 class="apple-title-medium" style="margin: 1.5rem 0 1rem;">Activités récentes</h2>
-
-      <!-- Consultations Card -->
-      <div class="apple-card activity-card" v-if="lastConsultation">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <Calendar :size="20" color="var(--accent-indigo)" />
-            <span style="font-weight: 600;">Dernière consultation</span>
+      <h2 class="apple-title-small" style="margin: 1.5rem 0 0.75rem;">Activités récentes</h2>
+      
+      <!-- Last Consultation Card -->
+      <div class="apple-card clickable" v-if="lastConsultation">
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <div class="icon-circle bg-blue">
+            <Activity :size="20" color="white" />
           </div>
-          <span class="apple-text-secondary">{{ lastConsultation.date }}</span>
-        </div>
-        <p class="apple-text-secondary">{{ lastConsultation.motif }}</p>
-        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #F2F2F7; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.9rem; font-weight: 500;">{{ lastConsultation.diagnostique }}</span>
-          <ChevronRight :size="20" color="#C7C7CC" />
+          <div style="flex: 1;">
+            <div style="font-weight: 600;">Dernière consultation</div>
+            <div class="apple-text-secondary">{{ lastConsultation.motif }} • {{ lastConsultation.date }}</div>
+          </div>
+          <ChevronRight :size="18" color="#C7C7CC" />
         </div>
       </div>
 
@@ -134,43 +120,34 @@ const dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: '
   font-size: 0.9rem;
 }
 
-.health-metric {
+.profile-card {
   padding: 1.5rem;
 }
 
-.metric-header {
+.profile-header {
   display: flex;
+  gap: 1rem;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
-.metric-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+.avatar-large {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--apple-blue);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.metric-label {
+  font-size: 1.5rem;
   font-weight: 700;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.metric-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
 }
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  border-top: 0.5px solid var(--separator);
+  padding-top: 1rem;
 }
 
 .small-metric {

@@ -35,7 +35,7 @@ const viewRecord = (patientId: string) => {
 </script>
 
 <template>
-  <div class="address-book">
+  <div class="address-book animate-slide-up">
     <header class="apple-header">
       <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
         <h1 class="apple-title-large">Patients</h1>

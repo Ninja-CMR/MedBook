@@ -20,19 +20,16 @@ const formData = ref({
   prenom: '',
   email: '',
   password: '',
-  // Patient fields
   groupeSanguin: 'A+',
   dateNaissance: '',
   allergies: '',
   antecedents: '',
-  // Doctor fields
   specialite: '',
   niveauAcces: AccessLevel.FULL,
 });
 
 const handleRegister = () => {
   loading.value = true;
-  
   const id = Math.random().toString(36).substr(2, 9);
   
   if (role.value === UserRole.PATIENT) {
@@ -48,17 +45,13 @@ const handleRegister = () => {
       allergies: formData.value.allergies,
       antecedents: formData.value.antecedents,
     };
-    
     auth.register(newPatient);
-    
-    // Auto-create carnet
     medical.carnets.push({
       id_carnet: 'CN-' + Math.floor(1000 + Math.random() * 9000),
       dateCreation: new Date().toISOString().split('T')[0],
       cle: 'AES-' + Math.random().toString(36).substr(2, 12),
       patient_id: id
     });
-    
   } else {
     const newMedecin: Medecin = {
       id,
@@ -70,7 +63,6 @@ const handleRegister = () => {
       specialite: formData.value.specialite,
       niveauAcces: formData.value.niveauAcces,
     };
-    
     auth.register(newMedecin);
   }
 
@@ -79,77 +71,78 @@ const handleRegister = () => {
     router.push(role.value === UserRole.PATIENT ? '/patient' : '/doctor');
   }, 1000);
 };
-
-const nextStep = () => step.value++;
-const prevStep = () => step.value--;
 </script>
 
 <template>
-  <div class="signup-container">
+  <div class="signup-view animate-slide-up">
     <header class="apple-header">
       <button @click="router.push('/login')" class="back-btn">
-        <ArrowLeft :size="24" color="var(--accent-blue)" />
+        <ArrowLeft :size="24" color="var(--apple-blue)" />
       </button>
-      <h1 class="apple-title-large" style="margin-top: 1rem;">Inscription</h1>
-      <p class="apple-text-secondary">Créez votre compte MedBook en quelques instants.</p>
+      <h1 class="apple-title-large">Inscription</h1>
+      <p class="apple-text-secondary">Rejoignez le réseau MedBook.</p>
     </header>
 
-    <main style="padding: 0 1.25rem 4rem;">
+    <main class="signup-main">
       <div class="apple-card">
-        <!-- Step 1: Role Selection -->
-        <div v-if="step === 1">
-          <h2 class="apple-title-medium" style="margin-bottom: 1.5rem;">Quel est votre rôle ?</h2>
-          <div class="role-selector">
-            <button @click="role = UserRole.PATIENT" class="role-btn" :class="{ active: role === UserRole.PATIENT }">
-              <UserIcon :size="32" />
-              <span>Patient</span>
-            </button>
-            <button @click="role = UserRole.MEDECIN" class="role-btn" :class="{ active: role === UserRole.MEDECIN }">
-              <Stethoscope :size="32" />
-              <span>Médecin</span>
-            </button>
+        <!-- Step 1: Role -->
+        <div v-if="step === 1" class="step-container">
+          <h2 class="apple-title-medium">Vous êtes ?</h2>
+          <div class="role-cards">
+            <div @click="role = UserRole.PATIENT" class="role-card" :class="{ active: role === UserRole.PATIENT }">
+              <div class="role-icon bg-blue">
+                <UserIcon :size="32" color="white" />
+              </div>
+              <span class="role-label">Patient</span>
+            </div>
+            <div @click="role = UserRole.MEDECIN" class="role-card" :class="{ active: role === UserRole.MEDECIN }">
+              <div class="role-icon bg-purple">
+                <Stethoscope :size="32" color="white" />
+              </div>
+              <span class="role-label">Médecin</span>
+            </div>
           </div>
-          <button @click="nextStep" class="apple-button" style="margin-top: 1rem;">Continuer</button>
+          <button @click="step = 2" class="apple-button">Continuer</button>
         </div>
 
-        <!-- Step 2: Personal Info -->
-        <div v-if="step === 2">
-          <h2 class="apple-title-medium" style="margin-bottom: 1.5rem;">Informations personnelles</h2>
-          <div class="form-group">
-            <label class="apple-text-secondary">Prénom</label>
-            <input v-model="formData.prenom" type="text" class="apple-input" placeholder="Jean">
+        <!-- Step 2: Personal -->
+        <div v-if="step === 2" class="step-container">
+          <h2 class="apple-title-medium">Identité</h2>
+          <div class="input-grid">
+            <div class="input-group">
+              <label>Prénom</label>
+              <input v-model="formData.prenom" type="text" class="apple-input" placeholder="Jean">
+            </div>
+            <div class="input-group">
+              <label>Nom</label>
+              <input v-model="formData.nom" type="text" class="apple-input" placeholder="Dupont">
+            </div>
           </div>
-          <div class="form-group">
-            <label class="apple-text-secondary">Nom</label>
-            <input v-model="formData.nom" type="text" class="apple-input" placeholder="Dupont">
+          <div class="input-group">
+            <label>Email</label>
+            <input v-model="formData.email" type="email" class="apple-input" placeholder="jean@exemple.fr">
           </div>
-          <div class="form-group">
-            <label class="apple-text-secondary">Email</label>
-            <input v-model="formData.email" type="email" class="apple-input" placeholder="jean.dupont@email.com">
-          </div>
-          <div class="form-group">
-            <label class="apple-text-secondary">Mot de passe</label>
+          <div class="input-group">
+            <label>Mot de passe</label>
             <input v-model="formData.password" type="password" class="apple-input" placeholder="••••••••">
           </div>
-          
-          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button @click="prevStep" class="apple-button" style="background: #F2F2F7; color: var(--text-primary); flex: 1;">Retour</button>
-            <button @click="nextStep" class="apple-button" style="flex: 2;">Suivant</button>
+          <div class="actions">
+            <button @click="step = 1" class="apple-button secondary">Retour</button>
+            <button @click="step = 3" class="apple-button primary">Suivant</button>
           </div>
         </div>
 
-        <!-- Step 3: Specific Info -->
-        <div v-if="step === 3">
-          <h2 class="apple-title-medium" style="margin-bottom: 1.5rem;">Détails spécifiques</h2>
+        <!-- Step 3: Specific -->
+        <div v-if="step === 3" class="step-container">
+          <h2 class="apple-title-medium">Détails de santé</h2>
           
-          <!-- Patient specific -->
           <div v-if="role === UserRole.PATIENT">
-            <div class="form-group">
-              <label class="apple-text-secondary">Date de naissance</label>
+            <div class="input-group">
+              <label>Date de naissance</label>
               <input v-model="formData.dateNaissance" type="date" class="apple-input">
             </div>
-            <div class="form-group">
-              <label class="apple-text-secondary">Groupe Sanguin</label>
+            <div class="input-group">
+              <label>Groupe Sanguin</label>
               <select v-model="formData.groupeSanguin" class="apple-input">
                 <option>A+</option><option>A-</option>
                 <option>B+</option><option>B-</option>
@@ -157,32 +150,30 @@ const prevStep = () => step.value--;
                 <option>O+</option><option>O-</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="apple-text-secondary">Allergies</label>
-              <input v-model="formData.allergies" type="text" class="apple-input" placeholder="Aucune, ou précisez...">
+            <div class="input-group">
+              <label>Allergies connues</label>
+              <input v-model="formData.allergies" type="text" class="apple-input" placeholder="Pollen, Arachides...">
             </div>
           </div>
 
-          <!-- Medecin specific -->
-          <div v-if="role === UserRole.MEDECIN">
-            <div class="form-group">
-              <label class="apple-text-secondary">Spécialité</label>
-              <input v-model="formData.specialite" type="text" class="apple-input" placeholder="Ex: Cardiologie, Généraliste...">
+          <div v-else>
+            <div class="input-group">
+              <label>Spécialité médicale</label>
+              <input v-model="formData.specialite" type="text" class="apple-input" placeholder="Généraliste, Cardiologue...">
             </div>
-            <div class="form-group">
-              <label class="apple-text-secondary">Niveau d'accès requis</label>
+            <div class="input-group">
+              <label>Niveau d'accès requis</label>
               <select v-model="formData.niveauAcces" class="apple-input">
-                <option :value="AccessLevel.FULL">Complet (Administrateur)</option>
-                <option :value="AccessLevel.LIMITED">Limité (Consultation)</option>
+                <option :value="AccessLevel.FULL">Complet (Cabinet + Urgence)</option>
+                <option :value="AccessLevel.LIMITED">Consultation uniquement</option>
               </select>
             </div>
           </div>
 
-          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button @click="prevStep" class="apple-button" style="background: #F2F2F7; color: var(--text-primary); flex: 1;">Retour</button>
-            <button @click="handleRegister" class="apple-button" style="flex: 2;" :disabled="loading">
-              <span v-if="!loading">Finaliser</span>
-              <span v-else>Création...</span>
+          <div class="actions">
+            <button @click="step = 2" class="apple-button secondary">Retour</button>
+            <button @click="handleRegister" class="apple-button primary" :disabled="loading">
+              {{ loading ? 'Création...' : 'Finaliser' }}
             </button>
           </div>
         </div>
@@ -192,7 +183,7 @@ const prevStep = () => step.value--;
 </template>
 
 <style scoped>
-.signup-container {
+.signup-view {
   background: var(--bg-color);
   min-height: 100vh;
 }
@@ -200,50 +191,91 @@ const prevStep = () => step.value--;
 .back-btn {
   background: none;
   border: none;
+  padding: 0;
+  margin-bottom: 0.5rem;
   cursor: pointer;
-  padding: 0.5rem 0;
 }
 
-.role-selector {
+.signup-main {
+  padding: 1.5rem 1.25rem 6rem;
+}
+
+.step-container h2 {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.role-cards {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.role-btn {
+.role-card {
   flex: 1;
+  background: #F2F2F7;
+  border-radius: 16px;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  padding: 1.5rem;
-  border-radius: 20px;
-  border: 2px solid transparent;
-  background: #F2F2F7;
   cursor: pointer;
   transition: all 0.2s;
-  color: var(--text-secondary);
+  border: 2.5px solid transparent;
 }
 
-.role-btn.active {
-  background: #E5F1FF;
-  border-color: var(--accent-blue);
-  color: var(--accent-blue);
+.role-card.active {
+  background: white;
+  border-color: var(--apple-blue);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
 }
 
-.role-btn span {
+.role-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-blue { background: var(--apple-blue); }
+.bg-purple { background: var(--apple-purple); }
+
+.role-label {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
-.form-group {
-  margin-bottom: 1.25rem;
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
-.form-group label {
+.input-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  font-size: 0.85rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  margin-left: 4px;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.actions .secondary {
+  flex: 1;
+  background: #F2F2F7;
+  color: black;
+}
+
+.actions .primary {
+  flex: 2;
 }
 </style>

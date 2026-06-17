@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 import { Home, ClipboardList, ShieldCheck, LogOut } from '@lucide/vue';
@@ -8,7 +7,8 @@ const auth = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
-const showNav = computed(() => auth.isAuthenticated && route.path !== '/login');
+// Layout transition
+const transitionName = 'fade';
 
 const handleLogout = () => {
   auth.logout();
@@ -17,14 +17,15 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <div id="app">
+  <div class="app-container">
     <router-view v-slot="{ Component }">
-      <transition name="fade" mode="out-in">
+      <transition :name="transitionName" mode="out-in">
         <component :is="Component" />
       </transition>
     </router-view>
 
-    <nav v-if="showNav" class="bottom-nav">
+    <!-- Bottom Navigation -->
+    <nav v-if="auth.isAuthenticated" class="apple-tab-bar">
       <router-link to="/patient" v-if="auth.userRole === 'PATIENT'" class="nav-item" :class="{ active: route.path === '/patient' }">
         <Home :size="24" />
         <span>Résumé</span>
